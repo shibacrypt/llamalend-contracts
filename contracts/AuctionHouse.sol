@@ -50,10 +50,37 @@ contract AuctionHouse is OwnableUpgradeable {
     }
 
     /**
+     * @dev Deposits NFT from the lending pool and start an auction immediately
+     */
+    function depositAndStartAuction(
+        ILendingPool.Loan calldata _loan,
+        uint256 _startPrice,
+        uint256 _endPrice,
+        uint256 _endTime
+    ) external onlyOwner {
+        deposit(_loan);
+        startAuction(uint256(_loan.nft), _startPrice, _endPrice, _endTime);
+    }
+
+    /**
+     * @dev Deposits NFT from the lending pool and schedule an auction
+     */
+    function depositAndScheduleAuction(
+        ILendingPool.Loan calldata _loan,
+        uint256 _startPrice,
+        uint256 _endPrice,
+        uint256 _startTime,
+        uint256 _endTime
+    ) external onlyOwner {
+        deposit(_loan);
+        scheduleAuction(uint256(_loan.nft), _startPrice, _endPrice, _startTime, _endTime);
+    }
+
+    /**
      * @dev Start an auction immediately
      */
     function startAuction(uint256 _tokenId, uint256 _startPrice, uint256 _endPrice, uint256 _endTime)
-        external
+        public
         onlyOwner
     {
         scheduleAuction(_tokenId, _startPrice, _endPrice, block.timestamp, _endTime);
@@ -132,7 +159,7 @@ contract AuctionHouse is OwnableUpgradeable {
      *
      * Liquidator (owner of this contract) must be added to the lending pool
      */
-    function deposit(ILendingPool.Loan calldata _loan) external onlyOwner {
+    function deposit(ILendingPool.Loan calldata _loan) public onlyOwner {
         ILendingPool(lendingPool).doEffectiveAltruism(_loan, address(this));
     }
 
